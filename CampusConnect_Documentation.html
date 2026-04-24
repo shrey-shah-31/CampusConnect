@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CampusConnect — Project Documentation</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+    line-height: 1.45;
+    color: #1a1a1a;
+    max-width: 210mm;
+    margin: 0 auto;
+    padding: 12mm 14mm 20mm;
+  }
+  h1 {
+    font-size: 22pt;
+    border-bottom: 2px solid #765a19;
+    padding-bottom: 6px;
+    margin-top: 0;
+  }
+  h2 {
+    font-size: 13pt;
+    color: #4a3a12;
+    margin-top: 1.4em;
+    page-break-after: avoid;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+  }
+  h3 { font-size: 11pt; margin: 1em 0 0.35em; page-break-after: avoid; }
+  p { margin: 0.5em 0; text-align: justify; }
+  ul, ol { margin: 0.4em 0 0.6em 1.2em; padding-left: 0.4em; }
+  li { margin: 0.25em 0; }
+  .meta {
+    font-size: 10pt;
+    color: #444;
+    margin-bottom: 1.2em;
+    padding: 10px 12px;
+    background: #f8f5f0;
+    border-left: 4px solid #c9a227;
+  }
+  code, .path { font-family: Consolas, monospace; font-size: 9.5pt; background: #f0f0f0; padding: 1px 5px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+    margin: 0.6em 0;
+    page-break-inside: avoid;
+  }
+  th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  .break { page-break-before: always; }
+  @media print {
+    body { padding: 0; }
+    a { color: #000; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>CampusConnect — College Placement Portal</h1>
+<p class="meta">
+  <strong>Project path:</strong> <span class="path">C:\xampp\htdocs\CampusConnect</span><br/>
+  <strong>Local URL:</strong> <span class="path">http://localhost/CampusConnect/</span><br/>
+  <strong>Document type:</strong> Technical &amp; academic project documentation
+</p>
+
+<h2>1. Introduction</h2>
+<p><strong>CampusConnect</strong> is a full-stack college placement portal that connects students, recruiting companies, and the placement office (admin). Students discover approved jobs, apply, track interviews and offers, and maintain profiles. Companies post roles (subject to moderation), review applicants, schedule interviews, and manage offers. Administrators approve accounts and jobs, monitor the pipeline, and export placement analytics.</p>
+<p>The system runs on <strong>XAMPP</strong> (Apache, PHP, MySQL).</p>
+<p><strong>Technologies:</strong> Frontend — HTML5, CSS3, JavaScript, Tailwind CSS (CDN) on key pages; Backend — PHP with PDO, session-based authentication, JSON APIs; Database — MySQL with schema in <code>database/schema.sql</code> and optional automatic alignment in <code>includes/db.php</code>.</p>
+
+<h2>2. Objectives</h2>
+<ul>
+  <li>Build a multi-role placement ecosystem (student, company, admin).</li>
+  <li>Implement secure registration and login with role-based access and API guards.</li>
+  <li>Support the placement workflow: jobs → apply → pipeline → interviews → offers → student accept/reject.</li>
+  <li>Use AJAX/Fetch for notifications and dynamic data where implemented.</li>
+  <li>Provide admin analytics (KPIs, trends, risk hints, resume scoring) and exportable reports (CSV/JSON).</li>
+  <li>Include resume builder with draft assistance, compensation display helpers, duplicate job prevention, and email hooks for interviews.</li>
+</ul>
+
+<h2>3. System Architecture</h2>
+<p><strong>Three-tier architecture</strong></p>
+<ol>
+  <li><strong>Presentation:</strong> PHP pages and assets under <code>assets/css</code>, <code>assets/js</code>; public entry <code>index.php</code> / <code>home.php</code>; role areas <code>student/</code>, <code>company/</code>, <code>admin/</code>.</li>
+  <li><strong>Application:</strong> Auth in <code>auth/</code>; APIs <code>api/jobs.php</code>, <code>applications.php</code>, <code>interviews.php</code>, <code>offers.php</code>, <code>notifications.php</code>; shared <code>includes/helpers.php</code>, <code>session.php</code>, <code>db.php</code>, <code>mailer.php</code>.</li>
+  <li><strong>Data:</strong> MySQL for users, profiles, companies, jobs, applications, interviews, offers, notifications.</li>
+</ol>
+<p>Communication uses form posts, redirects, and JSON over HTTP for APIs.</p>
+
+<h2>4. Database Design</h2>
+<p>Configure the database name in <code>includes/db.php</code>; import <code>database/schema.sql</code> into MySQL. Runtime migrations may add columns (e.g. <code>student_decision</code> on offers, <code>profile_photo_path</code> on student_profiles).</p>
+<table>
+  <thead><tr><th>Table</th><th>Purpose / key fields</th></tr></thead>
+  <tbody>
+    <tr><td><code>users</code></td><td>id, name, email, password_hash, role (admin/company/student), status, created_at</td></tr>
+    <tr><td><code>student_profiles</code></td><td>user_id (PK/FK), branch, gpa, cgpa, skills, linkedin, github, resume_path, profile_photo_path</td></tr>
+    <tr><td><code>companies</code></td><td>user_id (PK/FK), company_name, logo, description, website, hr fields, status</td></tr>
+    <tr><td><code>jobs</code></td><td>id, company_id, title, description, ctc, criteria_gpa, criteria_branch, skills_required, status, deadline</td></tr>
+    <tr><td><code>applications</code></td><td>id, student_id, job_id, status, applied_at; unique (student_id, job_id)</td></tr>
+    <tr><td><code>interviews</code></td><td>id, application_id, scheduled_at, mode, rounds, venue, notes</td></tr>
+    <tr><td><code>offers</code></td><td>id, application_id, offer_letter_path, ctc_offered, status, issued_at, student_decision</td></tr>
+    <tr><td><code>notifications</code></td><td>id, user_id, message, is_read, created_at</td></tr>
+  </tbody>
+</table>
+<p><strong>Relationships:</strong> Company → jobs (1:M); student/job → applications (M:N table); application → interviews (1:M); application → offer (typically 1:1). Indexes are created in <code>db.php</code> for dashboard and API performance.</p>
+
+<div class="break"></div>
+
+<h2>5. Functional Modules</h2>
+<ol>
+  <li><strong>Authentication:</strong> <code>auth/register.php</code>, <code>login.php</code>, <code>logout.php</code>; login requires approved/active status.</li>
+  <li><strong>Student:</strong> dashboard, jobs with client-side search (<code>filters.js</code>), applications, profile, interviews, offers (accept/reject), <code>resume_builder.php</code>.</li>
+  <li><strong>Company:</strong> <code>company/index.php</code> — post jobs (pending approval), duplicate detection, view/update applications, schedule interviews, upload offers.</li>
+  <li><strong>Admin:</strong> <code>admin/dashboard.php</code> — queues, analytics, resume scores, risk heuristics; <code>admin/review.php</code> — approve/reject/remove; <code>admin/reports.php</code> — KPIs, trends, CSV/JSON export.</li>
+  <li><strong>Notifications:</strong> in-app messages for jobs, applications, status changes, interviews, offers; API + <code>notifications.js</code>.</li>
+</ol>
+
+<h2>6. Features (Detailed)</h2>
+<p><strong>Students:</strong> secure login; one application per job; pipeline visibility; offer decisions; resume builder with downloadable text; compensation formatting helpers in PHP.</p>
+<p><strong>Companies:</strong> moderated job posting; application list scoped to own jobs; status workflow including auto-offer sync for hired/intern_offer_sent; interview scheduling with optional email (<code>send_portal_mail</code>); offer letter uploads.</p>
+<p><strong>Admins:</strong> user and job moderation; rich metrics (placement rate, active users, approval timing); fraud/risk scoring on pending items; CSV exports for placements and applications.</p>
+
+<h2>7. Security Implementation</h2>
+<ul>
+  <li>Password hashing via <code>password_hash</code> / <code>password_verify</code>.</li>
+  <li>PDO prepared statements for SQL injection mitigation.</li>
+  <li>Role checks on pages (<code>require_role</code>) and APIs (<code>require_api_role</code>).</li>
+  <li>HTML output escaped with <code>htmlspecialchars()</code> where used in templates.</li>
+  <li>Production hardening: validate uploads (type/size), use SMTP (e.g. PHPMailer) instead of raw <code>mail()</code>.</li>
+</ul>
+
+<h2>8. Advantages</h2>
+<ul>
+  <li>End-to-end placement workflow in one application.</li>
+  <li>Clear separation of access for three roles.</li>
+  <li>Actionable admin dashboard and exportable reports.</li>
+  <li>Schema file plus optional DB bootstrap and incremental fixes.</li>
+  <li>Responsive UI using Tailwind on key screens.</li>
+</ul>
+
+<h2>9. Limitations</h2>
+<ul>
+  <li>Email reliability depends on server mail configuration; SMTP integration recommended.</li>
+  <li>Resume “AI” assistance is template/rule-based, not an external LLM.</li>
+  <li>Web-only; no native mobile app.</li>
+  <li>No built-in video interview or calendar sync.</li>
+  <li>Admin user creation is manual (database).</li>
+</ul>
+
+<h2>10. Future Scope</h2>
+<ul>
+  <li>PHPMailer/SMTP and notification templates.</li>
+  <li>Calendar (.ics) and interview reminders.</li>
+  <li>OAuth login; PWA or mobile app.</li>
+  <li>Skill–job matching and recommendations.</li>
+  <li>Audit logs and compliance-friendly exports.</li>
+</ul>
+
+<h2>11. Conclusion</h2>
+<p>CampusConnect demonstrates full-stack development with PHP/PDO, MySQL, and a modern responsive frontend for campus recruitment. It is suitable for academic projects and as a base for a real placement office with production configuration and security hardening.</p>
+
+<p style="margin-top:2em;font-size:9pt;color:#666;">Generated for CampusConnect — <span class="path">C:\xampp\htdocs\CampusConnect</span></p>
+
+</body>
+</html>
