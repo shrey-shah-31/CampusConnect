@@ -145,7 +145,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="space-y-1.5">
 <div class="flex justify-between items-center px-1">
 <label class="block text-[10px] font-bold uppercase tracking-[0.1em] text-on-surface-variant" for="password">Password</label>
-<a class="text-[10px] font-bold uppercase tracking-[0.05em] text-primary hover:text-secondary transition-colors" href="#">Forgot password?</a>
+<a class="text-[10px] font-bold uppercase tracking-[0.05em] text-primary hover:text-secondary transition-colors" href="/CampusConnect/auth/forgot_password.php">Forgot password?</a>
 </div>
 <div class="relative archival-glow rounded-lg transition-all">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 text-lg" data-icon="lock">lock</span>
